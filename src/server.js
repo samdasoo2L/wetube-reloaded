@@ -33,6 +33,8 @@ app.use(
 // });
 
 app.use(localMiddleware);
+// 누구든 /uploads로 가려고 하면, uploads폴더의 내용을 보여주세요.
+app.use("/uploads", express.static("uploads"));
 app.use("/", rootRouter);
 app.use("/videos", videoRouter);
 app.use("/users", userRouter);

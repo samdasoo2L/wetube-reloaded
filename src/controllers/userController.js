@@ -1,10 +1,13 @@
 import User from "../models/User.js";
+import Video from "../models/Video.js";
 import fetch from "node-fetch";
 import bcrypt from "bcrypt";
 
 export const getJoin = (req, res) => res.render("join", { pageTitle: "Join" });
+
 export const postJoin = async (req, res) => {
   const { name, username, email, password, password2, location } = req.body;
+  console.log(req.body);
   const pageTitle = "Join";
   if (password !== password2) {
     return res.status(400).render("join", {
@@ -51,6 +54,7 @@ export const postJoin = async (req, res) => {
     });
   }
 };
+
 export const getLogin = (req, res) =>
   res.render("login", {
     pageTitle: "Login",
@@ -75,6 +79,7 @@ export const postLogin = async (req, res) => {
       errorMessage: "Wrong password",
     });
   }
+  //   유저네임도 존재하고, 비밀번호도 일치하고 => 세션에 로그인됐다 & 임마는 누구다
   req.session.loggedIn = true;
   req.session.user = user;
   return res.redirect("/");
@@ -162,5 +167,96 @@ export const logout = (req, res) => {
   req.session.destroy();
   return res.redirect("/");
 };
-export const see = (req, res) => res.send("See User");
-export const edit = (req, res) => res.send("Edit User");
+
+export const getEdit = (req, res) => {
+  return res.render("edit-profile", { pageTitle: "Edit Profile" });
+};
+
+export const postEdit = async (req, res) => {
+  // const id = req.session.user.id
+  //   const {
+  //     session: {
+  //       user: { id },
+  //     },
+  //   } = req;
+  const {
+    session: {
+      user: { _id, avatarUrl },
+    },
+    body: { name, email, username, location },
+    file,
+  } = req;
+  //   const { name, email, username, location } = req.body;
+  //   await User.findByIdAndUpdate(_id, {
+  //     name,
+  //     email,
+  //     username,
+  //     location,
+  //   });
+  //   req.session.user = {
+  //     ...req.session.user,
+  //     name,
+  //     email,
+  //     username,
+  //     location,
+  //   };
+  const updatedUser = await User.findByIdAndUpdate(
+    _id,
+    {
+      avatarUrl: file ? file.path : avatarUrl,
+      name,
+      email,
+      username,
+      location,
+    },
+    { new: true }
+  );
+  req.session.user = updatedUser;
+  return res.redirect("/users/edit");
+};
+
+export const getChangePassword = (req, res) => {
+  if (req.session.user.socialOnly === true) {
+    return res.redirect("/");
+  }
+  return res.render("users/change-password", { pageTitle: "Change Password" });
+};
+
+export const postChangePassword = async (req, res) => {
+  const {
+    session: {
+      user: { _id, password },
+    },
+    body: { oldPassword, newPassword, newPasswordConfirmation },
+  } = req;
+  const ok = await bcrypt.compare(oldPassword, password);
+  if (!ok) {
+    return res.status(400).render("users/change-password", {
+      pageTitle: "Change Password",
+      errorMessage: "The current password is incorrect.",
+    });
+  }
+  if (newPassword !== newPasswordConfirmation) {
+    return res.status(400).render("users/change-password", {
+      pageTitle: "Change Password",
+      errorMessage: "The Password does not match the confirmation.",
+    });
+  }
+  const user = await User.findById(_id);
+  user.password = newPassword;
+  await user.save();
+  req.session.user.password = user.password;
+  return res.redirect("/users/logout");
+};
+
+export const see = async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(id).populate("videos");
+  if (!user) {
+    return res.status(404).render("404", { pageTitle: "User not found." });
+  }
+  return res.render("users/profile", {
+    pageTitle: user.name,
+    user,
+  });
+};
