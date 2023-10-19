@@ -2,13 +2,13 @@
   "name": "wetube",
   "version": "1.0.0",
   "description": "The best way to watch wideos.",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/samdasoo2L/wetube-reloaded.git"
   },
   "scripts": {
-    "dev": "nodemon --exec babel-node src/init.js"
+    "dev:server": "nodemon",
+    "dev:assets": "webpack"
   },
   "author": "",
   "license": "ISC",
@@ -32,6 +32,14 @@
     "@babel/core": "^7.13.10",
     "@babel/node": "^7.13.10",
     "@babel/preset-env": "^7.13.10",
-    "nodemon": "^2.0.7"
+    "babel-loader": "^8.2.2",
+    "css-loader": "^5.2.2",
+    "mini-css-extract-plugin": "^1.5.0",
+    "nodemon": "^2.0.7",
+    "sass": "^1.32.10",
+    "sass-loader": "^11.0.1",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^4.6.0"
   }
 }

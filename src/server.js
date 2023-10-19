@@ -33,8 +33,9 @@ app.use(
 // });
 
 app.use(localMiddleware);
-// 누구든 /uploads로 가려고 하면, uploads폴더의 내용을 보여주세요.
+// 누구든 /uploads(변화가능)로 가려고 하면, uploads폴더의 내용을 보여주세요.
 app.use("/uploads", express.static("uploads"));
+app.use("/static", express.static("assets"));
 app.use("/", rootRouter);
 app.use("/videos", videoRouter);
 app.use("/users", userRouter);
