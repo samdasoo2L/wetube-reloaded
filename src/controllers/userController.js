@@ -30,6 +30,7 @@ export const postJoin = async (req, res) => {
   //       errorMessage: "This email is already taken.",
   //     });
   //   }
+  // 야 혹시 DB에 이거이거인 데이터 있냐? 있으면 츄류라고해줘 없으면 펄슈, 생각해보면 없으면 이상할 너무 자주쓰일 기능
   const exists = await User.exists({ $or: [{ username }, { email }] });
   if (exists) {
     return res.status(400).render("join", {
@@ -79,7 +80,7 @@ export const postLogin = async (req, res) => {
       errorMessage: "Wrong password",
     });
   }
-  //   유저네임도 존재하고, 비밀번호도 일치하고 => 세션에 로그인됐다 & 임마는 누구다
+  //   유저네임도 존재하고, 비밀번호도 일치하고 => 세션에 정보 집어 넣어준다. (로그인됐다 & 임마는 누구다)
   req.session.loggedIn = true;
   req.session.user = user;
   return res.redirect("/");
@@ -251,7 +252,10 @@ export const postChangePassword = async (req, res) => {
 
 export const see = async (req, res) => {
   const { id } = req.params;
-  const user = await User.findById(id).populate("videos");
+  const user = await User.findById(id).populate({
+    path: "videos",
+    populate: { path: "owner", module: "User" },
+  });
   if (!user) {
     return res.status(404).render("404", { pageTitle: "User not found." });
   }
